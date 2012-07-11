@@ -384,6 +384,7 @@ struct rq {
 	/* time-based average load */
 	u64 nr_last_stamp;
 	unsigned int ave_nr_running;
+	seqcount_t ave_seqcnt;
 
 	/* capture load from *all* tasks on this cpu: */
 	struct load_weight load;
@@ -994,19 +995,21 @@ static inline unsigned int do_avg_nr_running(struct rq *rq)
 #define NR_AVE_PERIOD		(1 << NR_AVE_PERIOD_EXP)
 #define NR_AVE_DIV_PERIOD(x)	((x) >> NR_AVE_PERIOD_EXP)
 
-static inline void do_avg_nr_running(struct rq *rq)
+static inline unsigned int do_avg_nr_running(struct rq *rq)
 {
 	s64 nr, deltax;
+	unsigned int ave_nr_running = rq->ave_nr_running;
 
 	deltax = rq->clock_task - rq->nr_last_stamp;
-	rq->nr_last_stamp = rq->clock_task;
 	nr = NR_AVE_SCALE(rq->nr_running);
 
 	if (deltax > NR_AVE_PERIOD)
-		rq->ave_nr_running = nr;
+		ave_nr_running = nr;
 	else
-		rq->ave_nr_running +=
-			NR_AVE_DIV_PERIOD(deltax * (nr - rq->ave_nr_running));
+		ave_nr_running +=
+			NR_AVE_DIV_PERIOD(deltax * (nr - ave_nr_running));
+
+	return ave_nr_running;
 }
 
 static inline void inc_nr_running(struct rq *rq)
@@ -1017,9 +1020,10 @@ static inline void inc_nr_running(struct rq *rq)
 	nr_stats->ave_nr_running = do_avg_nr_running(rq);
 	nr_stats->nr_last_stamp = rq->clock_task;
 #endif
-	do_avg_nr_running(rq);
+	write_seqcount_begin(&rq->ave_seqcnt);
+	rq->ave_nr_running = do_avg_nr_running(rq);
+	rq->nr_last_stamp = rq->clock_task;
 	rq->nr_running++;
-
 #ifdef CONFIG_INTELLI_HOTPLUG
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #endif
@@ -1038,22 +1042,15 @@ static inline void dec_nr_running(struct rq *rq)
 	nr_stats->ave_nr_running = do_avg_nr_running(rq);
 	nr_stats->nr_last_stamp = rq->clock_task;
 #endif
-	do_avg_nr_running(rq);
+	write_seqcount_begin(&rq->ave_seqcnt);
+	rq->ave_nr_running = do_avg_nr_running(rq);
+	rq->nr_last_stamp = rq->clock_task;
 	rq->nr_running--;
 
 #ifdef CONFIG_INTELLI_HOTPLUG
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #endif
-}
-
-unsigned long avg_nr_running(void)
-{
-	unsigned long i, sum = 0;
-
-	for_each_online_cpu(i)
-		sum += cpu_rq(i)->ave_nr_running;
-
-	return sum;
+	write_seqcount_end(&rq->ave_seqcnt);
 }
 
 extern void update_rq_clock(struct rq *rq);
