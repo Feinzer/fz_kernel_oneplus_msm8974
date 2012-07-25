@@ -2348,6 +2348,18 @@ unsigned long avg_nr_running(void)
 }
 EXPORT_SYMBOL(avg_nr_running);
 
+unsigned long get_avg_nr_running(unsigned int cpu)
+{
+        struct rq *q;
+
+        if (cpu >= nr_cpu_ids)
+                return 0;
+
+        q = cpu_rq(cpu);
+
+        return q->ave_nr_running;
+}
+
 unsigned long avg_cpu_nr_running(unsigned int cpu)
 {
 	unsigned int seqcnt, ave_nr_running;
