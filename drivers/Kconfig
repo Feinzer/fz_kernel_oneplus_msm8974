@@ -162,4 +162,6 @@ source "drivers/bif/Kconfig"
 
 source "drivers/sensors/Kconfig"
 
+source "drivers/cpuquiet/Kconfig"
+
 endmenu
