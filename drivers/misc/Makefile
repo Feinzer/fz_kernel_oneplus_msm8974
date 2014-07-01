@@ -71,5 +71,6 @@ obj-$(CONFIG_QFP_FUSE) += qfp_fuse.o
 obj-$(CONFIG_TI_DRV2667) += ti_drv2667.o
 obj-$(CONFIG_TI_DRV8834) += ti_drv8834.o
 obj-$(CONFIG_QPNP_MISC) += qpnp-misc.o
-obj-$(CONFIG_UID_CPUTIME) 	+= uid_cputime.o
 obj-$(CONFIG_SN3193_SLED) += shineled/
+obj-$(CONFIG_UID_CPUTIME) += uid_cputime.o
+obj-y			  += sound_control.o
