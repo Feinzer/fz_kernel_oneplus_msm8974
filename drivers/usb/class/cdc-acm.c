@@ -1057,6 +1057,7 @@ static int acm_probe(struct usb_interface *intf,
 			dev_err(&intf->dev, "skipping garbage\n");
 			goto next_desc;
 		}
+		elength = buffer[0];
 
 		switch (buffer[2]) {
 		case USB_CDC_UNION_TYPE: /* we've found it */
