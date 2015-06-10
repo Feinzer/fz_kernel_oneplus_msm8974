@@ -39,6 +39,7 @@ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct reques
 
 typedef void *(elevator_init_fn) (struct request_queue *);
 typedef void (elevator_exit_fn) (struct elevator_queue *);
+typedef void (elevator_registered_fn) (struct request_queue *);
 
 struct elevator_ops
 {
@@ -71,6 +72,7 @@ struct elevator_ops
 
 	elevator_init_fn *elevator_init_fn;
 	elevator_exit_fn *elevator_exit_fn;
+	elevator_registered_fn *elevator_registered_fn;
 };
 
 #define ELV_NAME_MAX	(16)
