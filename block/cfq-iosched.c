@@ -3901,7 +3901,7 @@ static int __init cfq_init(void)
 	if (CONFIG_HZ >= 1000 && !cfq_slice_async)
 		cfq_slice_async = 1;
 	if (CONFIG_HZ >= 1000 && !cfq_slice_idle)
-		cfq_slice_idle = 1;
+		cfq_slice_idle = 0;
 
 #ifdef CONFIG_CFQ_GROUP_IOSCHED
 	if (CONFIG_HZ >= 1000 && !cfq_group_idle)
