@@ -2443,7 +2443,7 @@ static tDumpFuncEntry limMenuDumpTable[] = {
     {358,   "PE.LIM: send sme stop bss request <session ID>",        dump_lim_stop_bss_req}, 
     {359,   "PE.LIM: send sme join request",                         dump_lim_send_join_req},
 #if defined WLAN_FEATURE_VOWIFI
-    {360,   "PE.LIM: send an RRM action frame",                      dump_lim_send_rrm_action},
+//    {360,   "PE.LIM: send an RRM action frame",                      dump_lim_send_rrm_action},
     {361,   "PE.LIM: unpack an RRM action frame",                    dump_lim_unpack_rrm_action},
 #endif
 #ifdef WLAN_FEATURE_NEIGHBOR_ROAMING
