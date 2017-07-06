@@ -60,7 +60,7 @@
 #include <linux/tick.h>
 #include <linux/version.h>
 
-#define ENABLE_SNAP_THERMAL_SUPPORT		// ZZ: Snapdragon temperature tripping support
+// #define ENABLE_SNAP_THERMAL_SUPPORT		// ZZ: Snapdragon temperature tripping support
 
 #if defined(CONFIG_THERMAL_TSENS8974) || defined(CONFIG_THERMAL_TSENS8960) && defined(ENABLE_SNAP_THERMAL_SUPPORT) // ZZ: Snapdragon temperature sensor
 #include <linux/msm_tsens.h>
