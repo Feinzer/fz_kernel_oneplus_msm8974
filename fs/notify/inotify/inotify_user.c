@@ -754,8 +754,6 @@ SYSCALL_DEFINE3(inotify_add_watch, int, fd, const char __user *, pathname,
 	struct path alteredpath;
 	struct path *canonical_path = &path;
 	struct file *filp;
-	struct path alteredpath;
-	struct path *canonical_path = &path;
 	int ret, fput_needed;
 	unsigned flags = 0;
 
