@@ -33,6 +33,7 @@
 #include <asm/uaccess.h>
 #include <mach/device_info.h>
 #include <linux/pcb_version.h>
+#include <linux/qpnp/vibrator.h>
 
 #include "synaptics_dsx.h"
 #include "synaptics_dsx_i2c.h"
@@ -96,6 +97,8 @@ char *tp_firmware_strings[TP_TYPE_MAX][LCD_TYPE_MAX] = {
 #define NO_SLEEP_OFF (0 << 2)
 #define NO_SLEEP_ON (1 << 2)
 #define CONFIGURED (1 << 7)
+
+#define VIBRATE_STRENGTH 27
 
 static int synaptics_rmi4_i2c_read(struct synaptics_rmi4_data *rmi4_data,
 		unsigned short addr, unsigned char *data,
@@ -2361,7 +2364,10 @@ static unsigned char synaptics_rmi4_update_gesture2(unsigned char *gesture,
 		case SYNA_ONE_FINGER_DOUBLE_TAP:
 			gesturemode = DouTap;
 			if (atomic_read(&syna_rmi4_data->double_tap_enable))
+			{
 				keyvalue = KEY_WAKEUP;
+				vibrate(VIBRATE_STRENGTH);
+			}
 			break;
 
 		case SYNA_ONE_FINGER_DIRECTION:
