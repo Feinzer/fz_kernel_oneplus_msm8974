@@ -425,6 +425,11 @@ error_create_level:
 	return rc;
 }
 
+void vibrate(int strength)
+{
+        qpnp_vib_enable(&vib_dev->timed_dev, strength);
+}
+
 static int  __devexit qpnp_vibrator_remove(struct spmi_device *spmi)
 {
 	struct qpnp_vib *vib = dev_get_drvdata(&spmi->dev);
