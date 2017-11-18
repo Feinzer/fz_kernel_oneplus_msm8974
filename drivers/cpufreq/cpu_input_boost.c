@@ -397,6 +397,18 @@ static void unboost_all_cpus(struct boost_policy *b)
 	set_ib_status(b, UNBOOST);
 }
 
+bool check_cpuboost(int cpu)
+{
+	struct ib_pcpu *pcpu;
+	struct boost_policy *b = boost_policy_g;
+	pcpu = per_cpu_ptr(b->ib.boost_info, cpu);
+
+	if (pcpu->state == UNBOOST)
+		return false;
+
+	return true;
+}
+
 static void unboost_cpu(struct ib_pcpu *pcpu)
 {
 	pcpu->state = UNBOOST;
