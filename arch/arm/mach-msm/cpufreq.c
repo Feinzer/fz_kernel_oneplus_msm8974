@@ -294,6 +294,7 @@ static int msm_cpufreq_cpu_callback(struct notifier_block *nfb,
 
 static struct notifier_block __refdata msm_cpufreq_cpu_notifier = {
 	.notifier_call = msm_cpufreq_cpu_callback,
+	.priority = INT_MAX,
 };
 
 static int msm_cpufreq_suspend(void)
@@ -337,6 +338,7 @@ static int msm_cpufreq_pm_event(struct notifier_block *this,
 
 static struct notifier_block msm_cpufreq_pm_notifier = {
 	.notifier_call = msm_cpufreq_pm_event,
+        .priority = INT_MAX,
 };
 
 static struct freq_attr *msm_freq_attr[] = {
