@@ -32,6 +32,10 @@
 	serial@f991e000 {
 		status = "ok";
 	};
+	
+	qcom,bam_dmux@fc834000 {
+		qcom,fast-shutdown;
+	};
 
 	oem_data_sharedmem {
 		compatible = "qcom,sharedmem-uio";
