@@ -79,6 +79,19 @@ config DEVFREQ_GOV_MSM_ADRENO_TZ
 	  Sets the frequency using a "on-demand" algorithm.
 	  This governor is unlikely to be useful for other devices.
 
+config ADRENO_REAL_IDLER
+	tristate "MSM Adreno Real Idler"
+	depends on DEVFREQ_GOV_MSM_ADRENO_TZ || DEVFREQ_GOV_MSM_ADRENO_PLUS
+	help
+		Adreno Real Idler - fix power algorithm, an efficient workaround
+		for Adreno's GPU overheads.
+
+		Since Adreno GPU tends to *not* use the lowest frequency even on idle,
+		Adreno Real Idler replaces power algorithm.
+
+		The higher frequencies are not touched, so high-demanding games
+		will (most likely) not suffer from worsened performance.
+
 config MSM_BIMC_BWMON
 	tristate "MSM BIMC Bandwidth monitor hardware"
 	depends on ARCH_MSM
