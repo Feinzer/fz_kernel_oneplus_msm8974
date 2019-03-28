@@ -114,6 +114,20 @@ config CPU_FREQ_DEFAULT_GOV_ALUCARD
   	select CPU_FREQ_GOV_ALUCARD
   	help
 
+config CPU_FREQ_DEFAULT_GOV_IMPULSE
+	bool "impulse"
+	select CPU_FREQ_GOV_IMPULSE
+	help
+	  Use the CPUFreq governor 'interactive' as default.	
+
+config CPU_FREQ_GOV_IMPULSE
+	tristate "'impulse' cpufreq policy governor"
+	help
+	  'impulse' - This driver adds a dynamic cpufreq policy governor
+	  designed for optimized balance between power and performance.
+
+	  If in doubt, say N.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -225,6 +239,14 @@ config CPU_BOOST
 config CPU_FREQ_GOV_ALUCARD
 	tristate "'alucard' cpufreq governor"
 	depends on CPU_FREQ
+
+config CPU_FREQ_GOV_IMPULSE
+	tristate "'impulse' cpufreq policy governor"
+	help
+	  'impulse' - This driver adds a dynamic cpufreq policy governor
+	  designed for optimized balance between power and performance.
+
+ 	  If in doubt, say N.
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
