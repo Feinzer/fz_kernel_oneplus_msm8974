@@ -25,7 +25,7 @@
 #define DEBUG 0
 
 #define ASMP_TAG			"AutoSMP:"
-#define ASMP_ENABLED			true
+#define ASMP_ENABLED			false
 #define DEFAULT_BOOST_LOCK_DUR		500 * 1000L
 #define DEFAULT_NR_CPUS_BOOSTED		2
 #define DEFAULT_UPDATE_RATE		20
