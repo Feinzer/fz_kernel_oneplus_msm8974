@@ -146,6 +146,14 @@ source "drivers/virt/Kconfig"
 
 source "drivers/devfreq/Kconfig"
 
+# Hotplugs
+
+config CUSTOM_HOTPLUGS
+    bool "Enable custom hotplugs added inside drivers/hotplug"
+    default n
+    
+source "drivers/hotplug/Kconfig"
+
 source "drivers/gud/Kconfig"
 
 source "drivers/coresight/Kconfig"
