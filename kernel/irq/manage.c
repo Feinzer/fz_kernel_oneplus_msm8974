@@ -18,7 +18,7 @@
 #include "internals.h"
 
 #ifdef CONFIG_IRQ_FORCED_THREADING
-__read_mostly bool force_irqthreads;
+__read_mostly bool force_irqthreads = true;
 
 static int __init setup_forced_irqthreads(char *arg)
 {
