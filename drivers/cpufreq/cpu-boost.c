@@ -26,7 +26,6 @@
 #include <linux/slab.h>
 #include <linux/input.h>
 #include <linux/time.h>
-#include <linux/cpu_boost.h>
 
 struct cpu_sync {
 	struct task_struct *thread;
@@ -58,9 +57,6 @@ module_param(input_boost_ms, uint, 0644);
 
 static struct delayed_work input_boost_rem;
 static u64 last_input_time;
-
-static unsigned int app_boost_enabled = 0;
-module_param(app_boost_enabled, uint, 0644);
 
 static struct kthread_work input_boost_work;
 static struct kthread_worker cpu_boost_worker;
@@ -149,18 +145,6 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val, voi
 		if (!b_min && !ib_min)
 			break;
 
-		ib_min = min((s->input_boost_min == UINT_MAX ?
-			policy->max : s->input_boost_min), policy->max);
-
-		/*
-		 * If we're not resetting the boost and if the new boosted freq
-		 * is below or equal to the current min freq, bail early
-		 */
-		if (ib_min) {
-			if (ib_min <= policy->min)
-				break;
-		}
-
 		min = max(b_min, ib_min);
 		min = min(min, policy->max);
 
@@ -208,33 +192,6 @@ static void update_policy_online(void)
 		cpufreq_update_policy(i);
 	}
 	put_online_cpus();
-}
-
-void do_input_boost_max(void)
-{
-	unsigned int i;
-	struct cpu_sync *i_sync_info;
-
-	if (!cpu_boost_worker_thread)
-		return;
-
- 	cancel_delayed_work_sync(&input_boost_rem);
-
- 	for_each_possible_cpu(i) {
-		i_sync_info = &per_cpu(sync_info, i);
-		i_sync_info->input_boost_min = UINT_MAX;
-	}
-
- 	update_policy_online();
-
- 	queue_delayed_work(system_power_efficient_wq,
-		&input_boost_rem, msecs_to_jiffies(
-			input_boost_ms < 1500 ? 1500 : input_boost_ms));
-}
-
-void do_app_boost(){
-        if(app_boost_enabled == 1)
-                do_input_boost_max();
 }
 
 static void do_input_boost_rem(struct work_struct *work)

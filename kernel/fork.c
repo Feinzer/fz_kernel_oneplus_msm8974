@@ -69,7 +69,6 @@
 #include <linux/oom.h>
 #include <linux/khugepaged.h>
 #include <linux/signalfd.h>
-#include <linux/cpu_boost.h>
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
@@ -1613,9 +1612,6 @@ long do_fork(unsigned long clone_flags,
 	struct task_struct *p;
 	int trace = 0;
 	long nr;
-
-	if (is_zygote_pid(current->pid))
-		do_app_boost();
 
 	/*
 	 * Do some preliminary argument and permissions checking before we
