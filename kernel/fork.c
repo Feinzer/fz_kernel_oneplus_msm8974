@@ -1615,7 +1615,7 @@ long do_fork(unsigned long clone_flags,
 	long nr;
 
 	if (is_zygote_pid(current->pid))
-		do_input_boost_max();
+		do_app_boost();
 
 	/*
 	 * Do some preliminary argument and permissions checking before we

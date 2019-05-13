@@ -13,6 +13,6 @@
 #ifndef _CPU_BOOST_H_
 #define _CPU_BOOST_H_
 
-void do_input_boost_max(void);
+void do_app_boost(void);
 
 #endif /* _CPUBOOST_H_ */

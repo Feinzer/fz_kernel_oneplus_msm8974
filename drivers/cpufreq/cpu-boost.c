@@ -59,6 +59,9 @@ module_param(input_boost_ms, uint, 0644);
 static struct delayed_work input_boost_rem;
 static u64 last_input_time;
 
+static unsigned int app_boost_enabled = 0;
+module_param(app_boost_enabled, uint, 0644);
+
 static struct kthread_work input_boost_work;
 static struct kthread_worker cpu_boost_worker;
 static struct task_struct *cpu_boost_worker_thread;
@@ -207,7 +210,7 @@ static void update_policy_online(void)
 	put_online_cpus();
 }
 
-void do_input_boost_max()
+void do_input_boost_max(void)
 {
 	unsigned int i;
 	struct cpu_sync *i_sync_info;
@@ -227,6 +230,11 @@ void do_input_boost_max()
  	queue_delayed_work(system_power_efficient_wq,
 		&input_boost_rem, msecs_to_jiffies(
 			input_boost_ms < 1500 ? 1500 : input_boost_ms));
+}
+
+void do_app_boost(){
+        if(app_boost_enabled == 1)
+                do_input_boost_max();
 }
 
 static void do_input_boost_rem(struct work_struct *work)
