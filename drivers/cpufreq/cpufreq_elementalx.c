@@ -691,7 +691,7 @@ void set_two_phase_freq_by_cpu ( int cpu_nr, int cpufreq){
 	two_phase_freq_array[cpu_nr-1] = cpufreq;
 }
 
-int input_event_boosted(void)
+int ex_input_event_boosted(void)
 {
 	unsigned long flags;
 
@@ -938,7 +938,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		}
 	}
 
-	if (input_event_boosted())
+	if (ex_input_event_boosted())
 	{
 		return;
 	}
@@ -1010,7 +1010,7 @@ static void do_dbs_timer(struct work_struct *work)
 				delay -= jiffies % delay;
 		}
 	} else {
-		if (input_event_boosted())
+		if (ex_input_event_boosted())
 			goto sched_wait;
 
 		__cpufreq_driver_target(dbs_info->cur_policy,
