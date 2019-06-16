@@ -109,17 +109,11 @@ static void gpu_unboost_worker(struct work_struct *work)
 static void gpu_ib_input_event(struct input_handle *handle,
 		unsigned int type, unsigned int code, int value)
 {
-	bool suspended;
-
 	if (!boost_freq || !boost_duration)
 		return;
 
 	if (!tz_devfreq_g)
 		return;
-
-	spin_lock(&suspend_lock);
-	suspended = suspend_start;
-	spin_unlock(&suspend_lock);
 
 	if (suspended)
 		return;
