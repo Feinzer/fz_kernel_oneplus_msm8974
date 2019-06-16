@@ -71,6 +71,8 @@ static struct work_struct reboost_work;
 static bool gpu_boost_running;
 static bool reboost_running;
 
+static unsigned long current_gpu_load;
+
 static unsigned long boost_freq;
 module_param(boost_freq, ulong, 0644);
 
@@ -83,8 +85,24 @@ module_param(input_boost_enabled, uint, 0644);
 static unsigned int load_boost_enabled;
 module_param(load_boost_enabled, uint, 0644);
 
-static unsigned int load_threshold;
-module_param(load_threshold, uint, 0644);
+static unsigned long load_threshold;
+module_param(load_threshold, ulong, 0644);
+
+static long get_gpu_load(struct devfreq_dev_status *stats,
+		struct devfreq_msm_adreno_tz_data *priv,
+		struct devfreq *devfreq)
+{
+	long total;
+	long busy;
+	long percent;
+
+	total = stats->total_time;
+	busy = (stats->busy_time * stats->current_frequency) /
+				devfreq->profile->freq_table[0];
+	if (total)
+		percent = (busy * 100) / total;
+	return percent;
+}
 
 static void gpu_update_devfreq(struct devfreq *devfreq)
 {
@@ -316,6 +334,8 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 	*freq = stats.current_frequency;
 	*flag = 0;
 
+	current_gpu_load = get_gpu_load(&stats, priv, devfreq);
+
 	/*
 	 * Force to use & record as min freq when system has
 	 * entered pm-suspend or screen-off state.
@@ -406,7 +426,7 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 	gpu_percent = (100 * (unsigned int)priv->bus.gpu_time) /
 			(unsigned int) priv->bus.total_time;
 
-        if (gpu_percent >= load_threshold)
+        if (current_gpu_load >= load_threshold)
                 gpu_load_boost_event();
 
 	/*
