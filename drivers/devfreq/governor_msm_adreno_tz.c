@@ -75,6 +75,15 @@ module_param(boost_freq, ulong, 0644);
 static unsigned long boost_duration;
 module_param(boost_duration, ulong, 0644);
 
+static unsigned int input_boost_enabled;
+module_param(input_boost_enabled, uint, 0644);
+
+static unsigned int load_boost_enabled;
+module_param(load_boost_enabled, uint, 0644);
+
+static unsigned int load_threshold;
+module_param(load_threshold, uint, 0644);
+
 static void gpu_update_devfreq(struct devfreq *devfreq)
 {
 	mutex_lock(&devfreq->lock);
@@ -106,8 +115,7 @@ static void gpu_unboost_worker(struct work_struct *work)
 	gpu_boost_running = false;
 }
 
-static void gpu_ib_input_event(struct input_handle *handle,
-		unsigned int type, unsigned int code, int value)
+static void do_gpu_boost(void)
 {
 	if (!boost_freq || !boost_duration)
 		return;
@@ -128,6 +136,19 @@ static void gpu_ib_input_event(struct input_handle *handle,
 
 	gpu_boost_running = true;
 	queue_work(system_highpri_wq, &boost_work);
+}
+
+static void gpu_load_boost_event(void)
+{
+	if (load_boost_enabled == 1 && load_threshold != 0)
+		do_gpu_boost();
+}
+
+static void gpu_ib_input_event(struct input_handle *handle,
+                unsigned int type, unsigned int code, int value)
+{
+	if (input_boost_enabled == 1)
+		do_gpu_boost();
 }
 
 static int gpu_ib_input_connect(struct input_handler *handler,
@@ -202,7 +223,7 @@ static struct input_handler gpu_ib_input_handler = {
 	.id_table	= gpu_ib_ids,
 };
 
-static void gpu_ib_init(void)
+static void gpu_boost_init(void)
 {
 	int ret;
 
@@ -371,6 +392,10 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 			(unsigned int) priv->bus.total_time;
 	gpu_percent = (100 * (unsigned int)priv->bus.gpu_time) /
 			(unsigned int) priv->bus.total_time;
+
+        if (gpu_percent >= load_threshold)
+                gpu_load_boost_event();
+
 	/*
 	 * If there's a new high watermark, update the cutoffs and send the
 	 * FAST hint.  Otherwise check the current value against the current
@@ -571,7 +596,7 @@ static struct devfreq_governor msm_adreno_tz = {
 
 static int __init msm_adreno_tz_init(void)
 {
-	gpu_ib_init();
+	gpu_boost_init();
 
 	return devfreq_add_governor(&msm_adreno_tz);
 }
