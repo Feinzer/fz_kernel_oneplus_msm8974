@@ -37,3 +37,4 @@ msm_adreno-objs = $(msm_adreno-y)
 
 obj-$(CONFIG_MSM_KGSL) += msm_kgsl_core.o
 obj-$(CONFIG_MSM_KGSL) += msm_adreno.o
+obj-$(CONFIG_GPU_BOOST)+= gpu_boost.o
