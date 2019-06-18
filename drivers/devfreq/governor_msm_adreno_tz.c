@@ -20,6 +20,9 @@
 #include <linux/ftrace.h>
 #include <linux/msm_adreno_devfreq.h>
 #include <linux/state_notifier.h>
+#ifdef CONFIG_GPU_BOOST
+#include <linux/gpu_boost.h>
+#endif
 #include <mach/scm.h>
 #include "governor.h"
 #ifdef CONFIG_ADRENO_IDLER
@@ -220,6 +223,13 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 			(unsigned int) priv->bus.total_time;
 	gpu_percent = (100 * (unsigned int)priv->bus.gpu_time) /
 			(unsigned int) priv->bus.total_time;
+
+#ifdef CONFIG_GPU_BOOST
+	if (gpu_load_boost_event(stats) == 1)
+		return 0;
+                /* GPU has been boosted so bail out */
+#endif
+
 	/*
 	 * If there's a new high watermark, update the cutoffs and send the
 	 * FAST hint.  Otherwise check the current value against the current
@@ -379,12 +389,21 @@ static int tz_handler(struct devfreq *devfreq, unsigned int event, void *data)
 	int result;
 	BUG_ON(devfreq == NULL);
 
+#ifdef CONFIG_GPU_BOOST
+	set_devfreq_g(devfreq);
+	/* Get the devfreq device data to manage its frequencies */
+#endif
+
 	switch (event) {
 	case DEVFREQ_GOV_START:
 		result = tz_start(devfreq);
 		break;
 
 	case DEVFREQ_GOV_STOP:
+#ifdef CONFIG_GPU_BOOST
+		gpu_boost_stop();
+		/* Remove all boost workers */
+#endif
 		result = tz_stop(devfreq);
 		break;
 
@@ -414,6 +433,10 @@ static struct devfreq_governor msm_adreno_tz = {
 
 static int __init msm_adreno_tz_init(void)
 {
+#ifdef CONFIG_GPU_BOOST
+	gpu_boost_start();
+	/* Start all the workers */
+#endif
 	return devfreq_add_governor(&msm_adreno_tz);
 }
 subsys_initcall(msm_adreno_tz_init);

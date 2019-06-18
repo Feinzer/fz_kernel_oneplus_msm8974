@@ -98,6 +98,15 @@ config ADRENO_IDLER
 	  wasted power coming from stock Adreno TZ while
 	  maintaining high-performance.
 
+config GPU_BOOST
+	tristate "MSM Adreno GPU Boost"
+	depends on DEVFREQ_GOV_MSM_ADRENO_TZ
+	default y
+	help
+	  Boost driver for the GPU based on input or load on top of
+	  Adreno TZ calculations, with its own methods to execute
+	  the boost at any event.
+
 config DEVFREQ_GOV_MSM_BW_HWMON
 	tristate "HW monitor based governor for device BW"
 	depends on ARCH_MSM_KRAIT || ARCH_MSM_BIMC_BWMON
