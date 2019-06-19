@@ -60,6 +60,10 @@
 #include <linux/eventfd.h>
 #include <linux/poll.h>
 #include <linux/flex_array.h> /* used in cgroup_attach_proc */
+#ifdef CONFIG_GPU_BOOST
+#include <linux/binfmts.h>
+#include <linux/gpu_boost.h>
+#endif
 
 #include <linux/atomic.h>
 
@@ -2233,6 +2237,16 @@ retry_find_task:
 		ret = cgroup_attach_proc(cgrp, tsk);
 	} else
 		ret = cgroup_attach_task(cgrp, tsk);
+
+#ifdef CONFIG_GPU_BOOST
+	if (!ret &&
+	    !strcmp(cgrp->dentry->d_name.name, "top-app") &&
+	    is_zygote_pid(tsk->parent->pid))
+	{
+		gpu_boost_kick_max();
+	}
+#endif
+
 	threadgroup_unlock(tsk);
 
 	put_task_struct(tsk);
