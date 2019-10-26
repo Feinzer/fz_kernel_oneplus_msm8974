@@ -6654,7 +6654,20 @@ static int qpnp_start_charging(struct qpnp_chg_chip *chip)
 			}
 		}
 
+#ifdef CONFIG_CHARGE_LEVEL
+		}
+#endif /* CONFIG_CHARGE_LEVEL */
+
 		qpnp_chg_vddmax_set(chip, chip->little_cool_bat_mv);
+
+#ifdef CONFIG_CHARGE_LEVEL
+		if (charge_level != 0)
+		{
+			qpnp_chg_ibatmax_set(chip, charge_level);
+		}
+		else
+		{
+#endif /* CONFIG_CHARGE_LEVEL */
 
 		if (qpnp_charger_type_get(chip) == POWER_SUPPLY_TYPE_USB_DCP) {
 			if (ret.intval / 1000 == 500) {
@@ -6669,11 +6682,24 @@ static int qpnp_start_charging(struct qpnp_chg_chip *chip)
 			qpnp_chg_ibatmax_set(chip, 500);
 		}
 
+#ifdef CONFIG_CHARGE_LEVEL
+		}
+#endif /* CONFIG_CHARGE_LEVEL */
+
 		qpnp_chg_vbatdet_set(chip, chip->little_cool_bat_mv
 				- chip->resume_delta_mv);
 	} else if (batt_temp <= chip->mBatteryTempBoundT4) { // 15 ~ 45
 		qpnp_battery_temp_region_set(chip,
 				CV_BATTERY_TEMP_REGION__NORMAL);
+
+#ifdef CONFIG_CHARGE_LEVEL
+		if (charge_level != 0)
+		{
+			qpnp_chg_iusbmax_set(chip, charge_level);
+		}
+		else
+		{
+#endif /* CONFIG_CHARGE_LEVEL */
 
 		chip->usb_psy->get_property(chip->usb_psy,
 				POWER_SUPPLY_PROP_CURRENT_MAX, &ret);
