@@ -128,7 +128,7 @@ static bool io_is_busy;
 
 /* Use agressive frequency step calculation, above a given a load threshold */
 static bool fastlane = false;
-static int fastlane_threshold = 50;
+static int fastlane_threshold = 300;
 
 /* Round to starting jiffy of next evaluation window */
 static u64 round_to_nw_start(u64 jif)
