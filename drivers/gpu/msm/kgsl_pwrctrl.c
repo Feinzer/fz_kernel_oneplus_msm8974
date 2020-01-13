@@ -449,6 +449,26 @@ static int kgsl_pwrctrl_gpuclk_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "%lu\n", freq);
 }
 
+static int kgsl_pwrctrl_gpufreq_mhz_show(struct device *dev,
+				    struct device_attribute *attr,
+				    char *buf)
+{
+	unsigned long freq;
+	struct kgsl_device *device = kgsl_device_from_dev(dev);
+	struct kgsl_pwrctrl *pwr;
+
+	if (device == NULL)
+		return 0;
+	pwr = &device->pwrctrl;
+
+	if (device->state == KGSL_STATE_SLUMBER)
+		freq = pwr->pwrlevels[pwr->num_pwrlevels - 1].gpu_freq;
+	else
+		freq = kgsl_pwrctrl_active_freq(pwr);
+
+	return snprintf(buf, PAGE_SIZE, "%lu\n", freq / 1000000);
+}
+
 static int kgsl_pwrctrl_idle_timer_store(struct device *dev,
 					struct device_attribute *attr,
 					const char *buf, size_t count)
@@ -534,6 +554,32 @@ static int kgsl_pwrctrl_gpubusy_show(struct device *dev,
 	stats = &device->pwrctrl.clk_stats;
 	ret = snprintf(buf, PAGE_SIZE, "%7d %7d\n",
 			stats->busy_old, stats->total_old);
+	if (!test_bit(KGSL_PWRFLAGS_AXI_ON, &device->pwrctrl.power_flags)) {
+		stats->busy_old = 0;
+		stats->total_old = 0;
+	}
+	return ret;
+}
+
+static int kgsl_pwrctrl_gpubusy_percentage_show(struct device *dev,
+					struct device_attribute *attr,
+					char *buf)
+{
+	int ret;
+	struct kgsl_device *device = kgsl_device_from_dev(dev);
+	struct kgsl_clk_stats *stats;
+	unsigned int busy_percent = 0;
+
+	if (device == NULL)
+		return 0;	
+	stats = &device->pwrctrl.clk_stats;
+
+	if (stats->total_old != 0)
+		busy_percent = (stats->busy_old * 100) / stats->total_old;
+
+	ret = snprintf(buf, PAGE_SIZE, "%d %%\n", busy_percent);
+
+	/* Reset the stats if GPU is OFF */
 	if (!test_bit(KGSL_PWRFLAGS_AXI_ON, &device->pwrctrl.power_flags)) {
 		stats->busy_old = 0;
 		stats->total_old = 0;
@@ -701,12 +747,14 @@ static ssize_t kgsl_pwrctrl_bus_split_store(struct device *dev,
 }
 
 DEVICE_ATTR(gpuclk, 0644, kgsl_pwrctrl_gpuclk_show, kgsl_pwrctrl_gpuclk_store);
+DEVICE_ATTR(gpufreq_mhz, 0444, kgsl_pwrctrl_gpufreq_mhz_show, NULL);
 DEVICE_ATTR(max_gpuclk, 0644, kgsl_pwrctrl_max_gpuclk_show,
 	kgsl_pwrctrl_max_gpuclk_store);
 DEVICE_ATTR(idle_timer, 0644, kgsl_pwrctrl_idle_timer_show,
 	kgsl_pwrctrl_idle_timer_store);
 DEVICE_ATTR(gpubusy, 0444, kgsl_pwrctrl_gpubusy_show,
 	NULL);
+DEVICE_ATTR(gpubusy_percentage, 0444, kgsl_pwrctrl_gpubusy_percentage_show, NULL);
 DEVICE_ATTR(gpu_available_frequencies, 0444,
 	kgsl_pwrctrl_gpu_available_frequencies_show,
 	NULL);
@@ -743,9 +791,11 @@ DEVICE_ATTR(bus_split, 0644,
 
 static const struct device_attribute *pwrctrl_attr_list[] = {
 	&dev_attr_gpuclk,
+	&dev_attr_gpufreq_mhz,
 	&dev_attr_max_gpuclk,
 	&dev_attr_idle_timer,
 	&dev_attr_gpubusy,
+	&dev_attr_gpubusy_percentage,
 	&dev_attr_gpu_available_frequencies,
 	&dev_attr_max_pwrlevel,
 	&dev_attr_min_pwrlevel,
