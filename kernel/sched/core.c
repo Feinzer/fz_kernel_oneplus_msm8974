@@ -2325,26 +2325,6 @@ unsigned long this_cpu_load(void)
 	return this->cpu_load[0];
 }
 
-u64 nr_running_integral(unsigned int cpu)
-{
-	unsigned int seqcnt;
-	u64 integral;
-    struct rq *q;
-
-    if (cpu >= nr_cpu_ids)
-        return 0;
-
-    q = cpu_rq(cpu);
-
-    seqcnt = read_seqcount_begin(&q->ave_seqcnt);
-    integral = do_nr_running_integral(q);
-    if (read_seqcount_retry(&q->ave_seqcnt, seqcnt)) {
-        read_seqcount_begin(&q->ave_seqcnt);
-        integral = q->nr_running_integral;
-    }
-
-    return integral;
-}
 
 /*
  * Global load-average calculations
@@ -5847,7 +5827,6 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
 
 	case CPU_UP_PREPARE:
 		rq->calc_load_update = calc_load_update;
-		rq->next_balance = jiffies;
 		break;
 
 	case CPU_ONLINE:
