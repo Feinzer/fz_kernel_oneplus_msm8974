@@ -1,7 +1,6 @@
 config MSM_HOTPLUG
 	bool "MSM hotplug driver"
 	depends on HOTPLUG_CPU
-	default y
 	help
 	  The MSM hotplug driver controls on-/offlining of additional cores based
 	  on current cpu load.
@@ -16,7 +15,6 @@ config AUTOSMP
 config INTELLI_HOTPLUG
 	bool "Intelli hotplug driver"
 	depends on HOTPLUG_CPU
-	default y
 	help
 	  An intelligent cpu hotplug driver for
 	  Low Latency Frequency Transition capable processors.
