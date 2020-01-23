@@ -36,4 +36,5 @@ static inline int qpnp_vibrator_config(struct qpnp_vib_config *vib_config)
 }
 #endif
 
+void vibrate(int strength);
 #endif /* __QPNP_VIBRATOR_H__ */
