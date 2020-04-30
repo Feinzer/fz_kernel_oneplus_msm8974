@@ -381,6 +381,13 @@ struct rq {
 #endif
 	int skip_clock_update;
 
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
+	/* time-based average load */
+	u64 nr_last_stamp;
+	u64 nr_running_integral;
+	seqcount_t ave_seqcnt;
+#endif
+
 	/* capture load from *all* tasks on this cpu: */
 	struct load_weight load;
 	unsigned long nr_load_updates;
@@ -503,7 +510,7 @@ DECLARE_PER_CPU(struct rq, runqueues);
 #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
 #define raw_rq()		(&__raw_get_cpu_var(runqueues))
 
-#ifdef CONFIG_INTELLI_HOTPLUG
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
 struct nr_stats_s {
 	/* time-based average load */
 	u64 nr_last_stamp;
@@ -959,7 +966,7 @@ extern void cpuacct_charge(struct task_struct *tsk, u64 cputime);
 static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
 #endif
 
-#ifdef CONFIG_INTELLI_HOTPLUG
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
 static inline unsigned int do_avg_nr_running(struct rq *rq)
 {
 
@@ -980,9 +987,24 @@ static inline unsigned int do_avg_nr_running(struct rq *rq)
 }
 #endif
 
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
+static inline u64 do_nr_running_integral(struct rq *rq)
+{
+	s64 nr, deltax;
+	u64 nr_running_integral = rq->nr_running_integral;
+
+	deltax = rq->clock_task - rq->nr_last_stamp;
+	nr = NR_AVE_SCALE(rq->nr_running);
+
+	nr_running_integral += nr * deltax;
+
+	return nr_running_integral;
+}
+#endif
+
 static inline void inc_nr_running(struct rq *rq)
 {
-#ifdef CONFIG_INTELLI_HOTPLUG
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
 	struct nr_stats_s *nr_stats = &per_cpu(runqueue_stats, rq->cpu);
 	write_seqcount_begin(&nr_stats->ave_seqcnt);
 	nr_stats->ave_nr_running = do_avg_nr_running(rq);
@@ -991,7 +1013,7 @@ static inline void inc_nr_running(struct rq *rq)
 
 	rq->nr_running++;
 
-#ifdef CONFIG_INTELLI_HOTPLUG
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #endif
 
@@ -1003,7 +1025,7 @@ static inline void inc_nr_running(struct rq *rq)
 
 static inline void dec_nr_running(struct rq *rq)
 {
-#ifdef CONFIG_INTELLI_HOTPLUG
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
 	struct nr_stats_s *nr_stats = &per_cpu(runqueue_stats, rq->cpu);
 	write_seqcount_begin(&nr_stats->ave_seqcnt);
 	nr_stats->ave_nr_running = do_avg_nr_running(rq);
@@ -1012,7 +1034,7 @@ static inline void dec_nr_running(struct rq *rq)
 
 	rq->nr_running--;
     
-#ifdef CONFIG_INTELLI_HOTPLUG
+#if defined CONFIG_INTELLI_HOTPLUG || defined CONFIG_CPU_QUIET
 	write_seqcount_end(&nr_stats->ave_seqcnt);
 #endif
 }
